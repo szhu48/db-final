@@ -12,7 +12,7 @@ def extract_infobox_data(text: str) -> Dict[str, str]:
     match = re.search(infobox_pattern, text, re.DOTALL)
     if not match:
         return {}
-    
+
     infobox_content = match.group(1)
     attributes = {
         "name": r"\|\s*name\s*=\s*(.*?)\s*(?=\n\||\n\}\})",
@@ -33,7 +33,13 @@ def extract_infobox_data(text: str) -> Dict[str, str]:
     for key, pattern in attributes.items():
         attr_match = re.search(pattern, infobox_content)
         if attr_match:
-            data[key] = attr_match.group(1).strip()
+            # Clean the data by removing unnecessary characters and trimming whitespace
+            cleaned_data = attr_match.group(1).strip()
+            if key == "birth_date":
+                # Format the date to YYYY-MM-DD if possible
+                cleaned_data = re.sub(r"(\d{4})\D*(\d{1,2})\D*(\d{1,2})", r"\1-\2-\3", cleaned_data)
+                cleaned_data = cleaned_data.strip()
+            data[key] = cleaned_data
 
     # Handle additional modules (e.g., musical artist)
     module_match = re.search(r'\|\s*module\s*=\s*\{\{Infobox musical artist.*?\|(.*)', text, re.DOTALL)
@@ -50,7 +56,6 @@ def extract_infobox_data(text: str) -> Dict[str, str]:
                 data[key] = module_attr_match.group(1).strip()
 
     return data
-
 
 def parse_dump(dump_path: str) -> List[Dict[str, str]]:
     """
@@ -142,6 +147,6 @@ def process_dump(dump_path: str, db_path: str):
 
 
 if __name__ == "__main__":
-    wikipedia_dump_path = Path(r"C:\Users\afafs\AppData\Local\Temp\Rar$DIa8764.21523\enwiki-latest-pages-articles-multistream.xml")
+    wikipedia_dump_path = "C:/Users/afafs/Documents/simplewiki-20240801-pages-articles-multistream.xml"
     db_path = "celebrities.db"
     process_dump(wikipedia_dump_path, db_path)
