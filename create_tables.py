@@ -30,8 +30,9 @@ def create_tables(db_path: str):
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS relationships (
         person_id TEXT,
-        relation_type TEXT,
-        related_name TEXT,
+        spouse TEXT,
+        partner TEXT,
+        num_children TEXT,
         FOREIGN KEY(person_id) REFERENCES celebrities(person_id)
     )
     """)
