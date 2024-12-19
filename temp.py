@@ -4,10 +4,28 @@ from typing import Dict, List
 import sqlite3
 from pathlib import Path
 
+# Function to clean extracted attributes
+def clean_text(text: str) -> str:
+    if not text:
+        return None
+    # Remove Wiki links
+    text = re.sub(r'\[\[|\]\]', '', text)
+    # Remove nested templates
+    text = re.sub(r'\{\{.*?\}\}', '', text)
+    # Remove HTML tags
+    text = re.sub(r'<.*?>', '', text)
+    # Remove category links
+    text = re.sub(r'\[[:][^]]*?[:]\]', '', text)
+    # Remove HTML entities (e.g., &nbsp;)
+    text = re.sub(r'&[a-z]+;', '', text)
+    # Replace pipe with comma
+    text = re.sub(r'[|]', ', ', text)
+    # Remove special characters except alphanumeric and spaces
+    text = re.sub(r'[^a-zA-Z0-9\s,]', '', text)
+    return text.strip()
+
+# Extract infobox data from Wiki text
 def extract_infobox_data(text: str) -> Dict[str, str]:
-    """
-    Extracts data from the Infobox of the article text.
-    """
     infobox_pattern = r'\{\{Infobox person(.*?)\n\}\}'
     match = re.search(infobox_pattern, text, re.DOTALL)
     if not match:
@@ -26,19 +44,19 @@ def extract_infobox_data(text: str) -> Dict[str, str]:
         "children": r"\|\s*children\s*=\s*(.*?)\s*(?=\n\||\n\}\})",
         "relatives": r"\|\s*relatives\s*=\s*(.*?)\s*(?=\n\||\n\}\})",
         "awards": r"\|\s*awards\s*=\s*(.*?)\s*(?=\n\||\n\}\})",
-        "website": r"\|\s*website\s*=\s*(.*?)\s*(?=\n\||\n\}\})",
     }
 
     data = {}
     for key, pattern in attributes.items():
         attr_match = re.search(pattern, infobox_content)
         if attr_match:
-            # Clean the data by removing unnecessary characters and trimming whitespace
-            cleaned_data = attr_match.group(1).strip()
+            raw_data = attr_match.group(1).strip()
             if key == "birth_date":
-                # Format the date to YYYY-MM-DD if possible
-                cleaned_data = re.sub(r"(\d{4})\D*(\d{1,2})\D*(\d{1,2})", r"\1-\2-\3", cleaned_data)
-                cleaned_data = cleaned_data.strip()
+                cleaned_data = re.sub(r"(\d{4})\D*(\d{1,2})\D*(\d{1,2})", r"\1-\2-\3", raw_data)
+                #parsed_date = clean_birth_date(raw_data)
+                #cleaned_data = clean_text(parsed_date)
+            else:
+                cleaned_data = clean_text(raw_data)
             data[key] = cleaned_data
 
     # Handle additional modules (e.g., musical artist)
@@ -53,9 +71,43 @@ def extract_infobox_data(text: str) -> Dict[str, str]:
         for key, pattern in module_attributes.items():
             module_attr_match = re.search(pattern, module_content)
             if module_attr_match:
-                data[key] = module_attr_match.group(1).strip()
+                data[key] = clean_text(module_attr_match.group(1).strip())
 
     return data
+
+def clean_birth_date(raw_date):
+    if not raw_date:
+        return None
+
+    # Regex to match date formats within templates like {{birth date|YYYY|MM|DD}} or {{birth date and age|YYYY-MM-DD}}
+    match = re.search(r'\{\{(?:birth date(?: and age)?|Birth date(?: and age)?)[^\d]*(\d{4})[|\-](\d{1,2})[|\-](\d{1,2})', raw_date, re.IGNORECASE)
+    if match:
+        year, month, day = match.groups()
+        return f"{year.zfill(4)}-{month.zfill(2)}-{day.zfill(2)}"
+
+    # Regex to match plain text dates like "4 May 1929" or "25 February 1943"
+    match = re.search(r'(\d{1,2})\s([A-Za-z]+)\s(\d{4})', raw_date)
+    if match:
+        day, month_str, year = match.groups()
+        # Convert month name to number
+        months = {
+            'january': '01', 'february': '02', 'march': '03', 'april': '04',
+            'may': '05', 'june': '06', 'july': '07', 'august': '08',
+            'september': '09', 'october': '10', 'november': '11', 'december': '12'
+        }
+        month = months.get(month_str.lower())
+        if month:
+            return f"{year}-{month}-{day.zfill(2)}"
+
+    # Regex to match ISO-like formats like "YYYY-MM-DD"
+    match = re.search(r'(\d{4})-(\d{1,2})-(\d{1,2})', raw_date)
+    if match:
+        year, month, day = match.groups()
+        return f"{year.zfill(4)}-{month.zfill(2)}-{day.zfill(2)}"
+
+    # If no match, return None
+    return None
+
 
 def parse_dump(dump_path: str) -> List[Dict[str, str]]:
     """
@@ -64,7 +116,7 @@ def parse_dump(dump_path: str) -> List[Dict[str, str]]:
     extracted_data = []
     for event, elem in ET.iterparse(dump_path, events=("start", "end")):
         if event == "end" and elem.tag.endswith("page"):
-            title = elem.find("./{*}title").text
+            title = elem.find("./{*}title").text  # Unique Wikipedia title
             revision = elem.find("./{*}revision/{*}text")
             text = revision.text if revision is not None else ""
             if not text:
@@ -72,10 +124,14 @@ def parse_dump(dump_path: str) -> List[Dict[str, str]]:
             
             infobox_data = extract_infobox_data(text)
             if infobox_data:
-                # Add person_id
+                # Add person_id from the unique Wikipedia title
                 infobox_data["person_id"] = title
+                infobox_data["name"] = infobox_data.get("name") or title
                 extracted_data.append(infobox_data)
-            
+            # Clean birth_date field
+            infobox_data["birth_date"] = clean_birth_date(infobox_data.get("birth_date"))
+                
+            # Release memory for processed elements
             elem.clear()
     return extracted_data
 
@@ -88,21 +144,21 @@ def save_to_database(db_path: str, data: List[Dict[str, str]]):
 
     for entry in data:
         # Insert into celebrities table
-        cursor.execute("""
+        cursor.execute(""" 
             INSERT OR REPLACE INTO celebrities (
-                person_id, name, birth_name, birth_date, birth_place, website
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                person_id, name, birth_name, birth_date, birth_place
+            ) VALUES (?, ?, ?, ?, ?)
         """, (
             entry.get("person_id"),
             entry.get("name"),
             entry.get("birth_name"),
             entry.get("birth_date"),
             entry.get("birth_place"),
-            entry.get("website")
         ))
 
         # Insert into occupations table
-        for occupation in entry.get("occupation", "").split("|"):
+        occupations = entry.get("occupation") or ""
+        for occupation in occupations.split("|"):
             cursor.execute("""
                 INSERT INTO occupations (person_id, occupation) VALUES (?, ?)
             """, (entry["person_id"], occupation.strip()))
@@ -128,7 +184,8 @@ def save_to_database(db_path: str, data: List[Dict[str, str]]):
                 """, (entry["person_id"], field, value.strip()))
 
         # Insert into awards table
-        for award in entry.get("awards", "").split("|"):
+        awards = entry.get("awards") or ""
+        for award in awards.split("|"):
             cursor.execute("""
                 INSERT INTO awards (person_id, award) VALUES (?, ?)
             """, (entry["person_id"], award.strip()))

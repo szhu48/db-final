@@ -13,8 +13,7 @@ def create_tables(db_path: str):
         name TEXT,
         birth_name TEXT,
         birth_date TEXT,
-        birth_place TEXT,
-        website TEXT
+        birth_place TEXT
     )
     """)
 
