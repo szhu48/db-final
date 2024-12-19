@@ -210,13 +210,6 @@ def save_to_database(db_path: str, data: List[Dict[str, str]]):
                 INSERT INTO works (person_id, work_type, work_title) VALUES (?, ?, ?)
             """, (entry["person_id"], "general", work.strip()))
 
-        # Insert into background table (genres, instruments, labels)
-        for field, values in entry.get("background", {}).items():
-            for value in values:
-                cursor.execute("""
-                    INSERT INTO background (person_id, field, value) VALUES (?, ?, ?)
-                """, (entry["person_id"], field, value.strip()))
-
         # Insert into awards table
         awards = entry.get("awards") or ""
         for award in awards.split("|"):
