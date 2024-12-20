@@ -1,0 +1,84 @@
+/* celebrity_finder.css */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    margin: 0;
+    padding: 0;
+    color: #fff;
+}
+
+header {
+    text-align: center;
+    margin-top: 50px;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+p {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-top: 10px;
+}
+
+#search-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+#search {
+    padding: 10px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 5px;
+    width: 300px;
+}
+
+#search-btn {
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    border: none;
+    background-color: #f09a3d;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+#search-btn:hover {
+    background-color: #e6892a;
+}
+
+#results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.celebrity-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    color: #fff;
+}
+
+.celebrity-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.celebrity-card p {
+    font-size: 1.1rem;
+    margin: 5px 0;
+}
+
+.celebrity-card strong {
+    color: #f09a3d;
+}

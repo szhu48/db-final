@@ -8,7 +8,7 @@ document.getElementById('search').addEventListener('input', function() {
     }
 
     // Perform an AJAX call to the PHP file with the search term
-    fetch('procedures.php?search=' + encodeURIComponent(search))
+    fetch('/db-final/php/celebrity_finder.php?search=' + encodeURIComponent(search))
         .then(response => response.text())
         .then(data => {
             // Update the results section with the fetched data

@@ -3,21 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celebrity Matchmaking</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Celebrity Database</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
 <header>
-    <h1>Celebrity Matchmaking</h1>
-    <input type="text" id="search" placeholder="Search for celebrities...">
+    <h1>Welcome to the Celebrity Database</h1>
+    <p>Select an option to proceed:</p>
 </header>
 
-<section id="results">
-    <!-- The search results will be displayed here dynamically -->
-</section>
+<!-- Main Section with Big Clickable Boxes -->
+<div class="main-container">
+    <div class="feature-box" id="celebrityFinderBox">
+        <a href="celebrity_finder.html" class="box-link">
+            <h2>Celebrity Finder</h2>
+            <p>Search for celebrities for more information about them!</p>
+        </a>
+    </div>
 
-<script src="scripts.js"></script>
+    <div class="feature-box" id="meetYourMatchBox">
+        <a href="matchmaking.html" class="box-link">
+            <h2>Meet Your Match</h2>
+            <p>Find the perfect celebrity match based on your criteria!</p>
+        </a>
+    </div>
+
+    <div class="feature-box" id="relationshipHistoryBox">
+        <a href="relationships.html" class="box-link">
+            <h2>Relationship History</h2>
+            <p>Explore the past relationships of your favorite celebrities!</p>
+        </a>
+    </div>
+</div>
 
 </body>
 </html>

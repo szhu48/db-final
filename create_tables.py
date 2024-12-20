@@ -36,16 +36,6 @@ def create_tables(db_path: str):
         FOREIGN KEY(person_id) REFERENCES celebrities(person_id)
     )
     """)
-
-    # Create the works table
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS works (
-        person_id TEXT,
-        work_type TEXT,
-        work_title TEXT,
-        FOREIGN KEY(person_id) REFERENCES celebrities(person_id)
-    )
-    """)
     
     # Create the awards table
     cursor.execute("""

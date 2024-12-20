@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celebrity Relationship History</title>
+    <link rel="stylesheet" href="css/relationships.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="main-title">Celebrity Relationship History</h1>
+
+        <!-- Search form -->
+        <form id="celebrity-relationship-form" class="matchmaking-form">
+            <div class="form-group">
+                <label for="celebrity_name">Celebrity Name:</label>
+                <input type="text" id="celebrity_name" name="celebrity_name" class="form-control" placeholder="Enter celebrity name" required>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-group">
+                <button type="submit" id="submit-button" class="btn btn-primary">See Relationships</button>
+            </div>
+        </form>
+
+        <!-- Results container -->
+        <div id="results" class="results-container">
+        </div>
+    </div>
+
+    <script src="js/relationships.js"></script>
+
+</body>
+</html>
